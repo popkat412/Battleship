@@ -16,6 +16,7 @@ class Ship:
 
     @staticmethod
     def generateShips(*sizes) -> list:
+        # TODO: Check if overlapping ships
         ships = []
         for ship_size in sizes:
             if ship_size <= 0:
