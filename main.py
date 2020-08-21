@@ -15,7 +15,7 @@ def main():
     clock = pygame.time.Clock()
 
     # Game data
-    ships: List[Ship] = Ship.generateShips(*config.SHIP_SEGMENTS)
+    ships: List[Ship] = Ship.generate_ships(*config.SHIP_SEGMENTS)
     miss_coord = []
     hit_coord = []
 
@@ -32,7 +32,7 @@ def main():
         # Ships
         for ship in ships:
             for segment in ship.segments:
-                pygame.draw.circle(WIN, (255, 150, 100),
+                pygame.draw.circle(WIN, ship.color,
                                    (segment.x * config.GRID_SIZE + config.GRID_SIZE / 2,
                                     segment.y * config.GRID_SIZE + config.GRID_SIZE / 2),
                                    config.GRID_SIZE / 2 - config.SHIP_PADDING)
