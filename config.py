@@ -11,4 +11,4 @@ FONT_NAME = "assets/Verdana.ttf"
 FONT_SIZE = 20
 TITLE_FONT_SIZE = 28
 
-SHIP_SEGMENTS = (2, 3, 3, 5)
+SHIP_SIZES = (2, 3, 3, 5)

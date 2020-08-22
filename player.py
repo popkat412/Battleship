@@ -5,5 +5,9 @@ import config
 
 class Player:
     def __init__(self, name: str, ships: List[Ship] = None) -> None:
-        self.ships = ships or Ship.generate_ships(*config.SHIP_SEGMENTS)
+        if ships is not None:
+            self.ships = ships
+        else:
+            self.ships = Ship.generate_ships(*config.SHIP_SIZES)
+
         self.name = name
