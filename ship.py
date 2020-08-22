@@ -1,4 +1,5 @@
 from typing import List, Tuple
+import sys
 import random
 import config
 from coord import Coord
@@ -31,7 +32,6 @@ class Ship:
 
     @staticmethod
     def generate_ships(*sizes) -> list:
-        # FIXME: Check if overlapping ships not working
         ships = []
 
         def check_overlap(to_check: Ship) -> bool:
@@ -50,7 +50,10 @@ class Ship:
             orientation = random.choice(("vertical", "horizontal"))
 
             segments: List[Coord] = []
-            while True:
+            generateCount = 0
+            while generateCount < 100:
+                generateCount += 1
+
                 if orientation == "vertical":
                     segments = []
                     # Pick a random starting point
@@ -68,5 +71,8 @@ class Ship:
                 if not check_overlap(s):
                     ships.append(Ship(segments))
                     break
+
+            if generateCount >= 100:
+                sys.exit("Error: Infinite loop while generating ships")
 
         return ships
