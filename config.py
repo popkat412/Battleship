@@ -1,8 +1,6 @@
 from typing import Tuple
+from typedefs import Pos, Color
 
-# Type aliases
-Pos = Tuple[int, int]
-Color = Tuple[int, int, int]
 
 # Sizes
 WIDTH, HEIGHT = 750, 750
@@ -12,9 +10,12 @@ GRID_SIZE = 50
 
 # Display
 SHIP_DISP_PADDING = 5
-GRID_DISP_LOCATION = (int((HEIGHT - GRID_SIZE * GRID_X) / 2),
-                      int((WIDTH - GRID_SIZE * GRID_Y) / 2))  # This is the location of the board's top-left corner
+GRID_DISP_LOCATION: Pos = (int((HEIGHT - GRID_SIZE * GRID_X) / 2),
+                           int((WIDTH - GRID_SIZE * GRID_Y) / 2))  # This is the location of the board's top-left corner
+
+# Colors
 BACKGROUND_COLOR: Color = (0, 0, 0)
+FOREGROUND_COLOR: Color = (255, 255, 255)
 
 # Text
 FONT_NAME = "assets/Verdana.ttf"

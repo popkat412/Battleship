@@ -6,6 +6,7 @@ import pygame
 import pygame.freetype
 from player import Player
 import config
+import utilities as utils
 
 pygame.init()
 
@@ -33,7 +34,7 @@ def main():
 
     def draw_title_text(s: pygame.Surface, subhead: str) -> None:
         text_surface, text_rect = TITLE_FONT.render(
-            f"BATTLESHIP: {subhead}", (255, 255, 255))
+            f"BATTLESHIP: {subhead}", config.FOREGROUND_COLOR)
         s.blit(text_surface, (int(config.WIDTH / 2 -
                                   text_rect.width / 2),
                               int(dist_board_window("X") / 2)))
@@ -43,7 +44,6 @@ def main():
 
         # TODO: 2 rows of ships at the bottom for player to drag
         draggable_ships: List[DraggableShip] = []
-        isDraggingShip = False
 
         for i, size in enumerate(config.SHIP_SIZES):
             # NOTE: Maybe find some better way to automatically arrange the ships...
@@ -63,6 +63,9 @@ def main():
         while run:
             clock.tick(FPS)
 
+            grid_surface = pygame.Surface(
+                (config.GRID_X * config.GRID_SIZE, config.GRID_Y * config.GRID_SIZE))
+
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     run = False
@@ -72,16 +75,22 @@ def main():
                     for s in draggable_ships:
                         if s.get_screen_pos_rect().collidepoint(pygame.mouse.get_pos()):
                             print("Clicked on ship")
-                            isDraggingShip = True
                             mousePos: Pos = pygame.mouse.get_pos()
-                            s.rel_mouse_pos = (
-                                mousePos[0] - s.get_screen_pos_rect().x,
-                                mousePos[1] - s.get_screen_pos_rect().y)
+                            s.rel_mouse_pos = utils.sub_pos(
+                                mousePos, utils.rect_to_pos(s.get_screen_pos_rect()))
 
                 elif event.type == pygame.MOUSEBUTTONUP:
                     # Mouse button up
-                    isDraggingShip = False
                     for s in draggable_ships:
+                        # If ship is being dragged
+                        if s.rel_mouse_pos is not None:
+                            # If released inside board
+                            if grid_surface.get_rect().move(*config.GRID_DISP_LOCATION).collidepoint(pygame.mouse.get_pos()):
+
+                                print("Released on grid!")
+                                s.grid_pos = utils.sub_pos(
+                                    pygame.mouse.get_pos(), s.rel_mouse_pos)
+
                         s.rel_mouse_pos = None
 
             # Background
@@ -90,13 +99,10 @@ def main():
             # Title
             draw_title_text(WIN, "Place your Ships")
 
-            grid_surface = pygame.Surface(
-                (config.GRID_X * config.GRID_SIZE, config.GRID_Y * config.GRID_SIZE))
-
             # Grid
             for i in range(config.GRID_X):
                 for j in range(config.GRID_Y):
-                    pygame.draw.rect(grid_surface, (255, 255, 255),
+                    pygame.draw.rect(grid_surface, config.FOREGROUND_COLOR,
                                      pygame.Rect(i * config.GRID_SIZE, j * config.GRID_SIZE, config.GRID_SIZE, config.GRID_SIZE), 3)
 
             # Ships (may not be necessary)
@@ -114,7 +120,9 @@ def main():
                 if s.rel_mouse_pos is not None:
                     mousePos = pygame.mouse.get_pos()
                     WIN.blit(
-                        s.surface, (mousePos[0] - s.rel_mouse_pos[0], mousePos[1] - s.rel_mouse_pos[1]))
+                        s.surface, utils.sub_pos(mousePos, s.rel_mouse_pos))
+                elif s.grid_pos is not None:
+                    WIN.blit(s.surface, s.grid_pos)
                 else:
                     WIN.blit(s.surface, s.default_pos)
 
@@ -130,7 +138,7 @@ def main():
 
             # Player text
             # text_surface, text_rect = TITLE_FONT.render(
-            #     "BATTLESHIP", (255, 255, 255))
+            #     "BATTLESHIP", config.FOREGROUND_COLOR)
             # WIN.blit(text_surface, (config.WIDTH / 2 -
             #                         text_rect.width / 2, (config.HEIGHT - config.GRID_Y * config.GRID_SIZE) / 4))
 

@@ -2,18 +2,15 @@ from typing import List, Tuple
 import sys
 import random
 import config
-from config import Color
+from typedefs import Color
 from coord import Coord
-
-
-def random_color() -> Color:
-    return (random.randint(100, 255), random.randint(100, 255), random.randint(100, 255))
+import utilities
 
 
 class Ship:
     def __init__(self, segments: List[Coord]) -> None:
         self.segments: List[Coord] = segments
-        self.color: Color = random_color()
+        self.color: Color = utilities.random_color()
 
     def __str__(self) -> str:
         return str(self.segments)
