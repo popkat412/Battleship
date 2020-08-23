@@ -7,6 +7,7 @@ Note: This is just an experiment with Pygame and the code is probably horrible
 ### Todo
 - [ ] Base playable game
     - [ ] Allow human to drag ships onto the board
+        - [ ] Press space to rotate ships (swap x and y of rel_mouse_pos)
         - [ ] Snap to grid
         - [ ] Check overlap
     - [ ] Computer AI
