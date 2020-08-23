@@ -1,6 +1,6 @@
-from typing import Union
-from ship import Ship
-from pygame import Surface
+from typing import List
+from config import Pos
+from draggable_ship import DraggableShip
 from game_state import GameState
 import pygame
 import pygame.freetype
@@ -31,25 +31,34 @@ def main():
         else:
             return (config.WIDTH - config.GRID_X * config.GRID_SIZE) / 2
 
-    def draw_title_text(s: Surface, subhead: str) -> None:
+    def draw_title_text(s: pygame.Surface, subhead: str) -> None:
         text_surface, text_rect = TITLE_FONT.render(
             f"BATTLESHIP: {subhead}", (255, 255, 255))
-        s.blit(text_surface, (config.WIDTH / 2 -
-                              text_rect.width / 2,
-                              dist_board_window("X") / 2))
+        s.blit(text_surface, (int(config.WIDTH / 2 -
+                                  text_rect.width / 2),
+                              int(dist_board_window("X") / 2)))
 
     def place_ships_screen() -> None:
         nonlocal run
 
         # TODO: 2 rows of ships at the bottom for player to drag
-        ship_surfaces = []
-        for size in config.SHIP_SIZES:
-            ship_surfaces.append((Ship([]), pygame.Surface(
-                (config.GRID_SIZE * size, config.GRID_SIZE))))  # Ships are all horizontal
+        draggable_ships: List[DraggableShip] = []
+        isDraggingShip = False
+
+        for i, size in enumerate(config.SHIP_SIZES):
+            # NOTE: Maybe find some better way to automatically arrange the ships...
+            # ! This only works if there are 4 ships
+            pos = (int(config.WIDTH / 4),
+                   int((config.HEIGHT - dist_board_window("Y")) + i * config.GRID_SIZE +
+                       config.SHIP_DISP_PADDING))  # Put first 2 in first column
+            if i >= 2:  # Put next 2 in 2nd column
+                pos = (int(config.WIDTH / 2), int((config.HEIGHT -
+                                                   dist_board_window("Y")) + (i - 2) * config.GRID_SIZE + config.SHIP_DISP_PADDING))
+            draggable_ships.append(DraggableShip(size, pos))
 
             for i in range(size):
                 pygame.draw.circle(
-                    ship_surfaces[-1][1], ship_surfaces[-1][0].color, (config.GRID_SIZE / 2 + i * config.GRID_SIZE, config.GRID_SIZE / 2), (config.GRID_SIZE - config.SHIP_DISP_PADDING) / 2)
+                    draggable_ships[-1].surface, draggable_ships[-1].ship.color, (int(config.GRID_SIZE / 2 + i * config.GRID_SIZE), int(config.GRID_SIZE / 2)), int((config.GRID_SIZE - config.SHIP_DISP_PADDING) / 2))
 
         while run:
             clock.tick(FPS)
@@ -57,6 +66,26 @@ def main():
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     run = False
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    # Mouse button down
+                    print(f"Mouse down: {pygame.mouse.get_pos()}")
+                    for s in draggable_ships:
+                        if s.get_screen_pos_rect().collidepoint(pygame.mouse.get_pos()):
+                            print("Clicked on ship")
+                            isDraggingShip = True
+                            mousePos: Pos = pygame.mouse.get_pos()
+                            s.rel_mouse_pos = (
+                                mousePos[0] - s.get_screen_pos_rect().x,
+                                mousePos[1] - s.get_screen_pos_rect().y)
+
+                elif event.type == pygame.MOUSEBUTTONUP:
+                    # Mouse button up
+                    isDraggingShip = False
+                    for s in draggable_ships:
+                        s.rel_mouse_pos = None
+
+            # Background
+            WIN.fill(config.BACKGROUND_COLOR)
 
             # Title
             draw_title_text(WIN, "Place your Ships")
@@ -70,7 +99,7 @@ def main():
                     pygame.draw.rect(grid_surface, (255, 255, 255),
                                      pygame.Rect(i * config.GRID_SIZE, j * config.GRID_SIZE, config.GRID_SIZE, config.GRID_SIZE), 3)
 
-            # Ships
+            # Ships (may not be necessary)
             for ship in players[0].ships:
                 for segment in ship.segments:
                     pygame.draw.circle(grid_surface, ship.color,
@@ -81,22 +110,20 @@ def main():
             WIN.blit(grid_surface, config.GRID_DISP_LOCATION)
 
             # Draggable ships at the bottom
-            for i, s in enumerate(ship_surfaces):
-                # NOTE: Maybe find some better way to automatically arrange the ships...
-                # ! This only works if there are 4 ships
-                if i < 2:  # Put first 2 in first column
-                    WIN.blit(s[1], (config.WIDTH / 4,
-                                    (config.HEIGHT - dist_board_window("Y")) + i * config.GRID_SIZE + config.SHIP_DISP_PADDING))
-                else:  # Put next 2 in 3rd column
-                    WIN.blit(s[1], (config.WIDTH / 2, (config.HEIGHT -
-                                                       dist_board_window("Y")) + (i - 2) * config.GRID_SIZE + config.SHIP_DISP_PADDING))
+            for s in draggable_ships:
+                if s.rel_mouse_pos is not None:
+                    mousePos = pygame.mouse.get_pos()
+                    WIN.blit(
+                        s.surface, (mousePos[0] - s.rel_mouse_pos[0], mousePos[1] - s.rel_mouse_pos[1]))
+                else:
+                    WIN.blit(s.surface, s.default_pos)
 
             pygame.display.update()
 
     def game_screen():
         nonlocal run
-        while run:
 
+        while run:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     run = False
@@ -109,7 +136,7 @@ def main():
 
     def redraw_window():
         # Background
-        WIN.fill((0, 0, 0))
+        WIN.fill(config.BACKGROUND_COLOR)
 
         if (currentState == GameState.PLACE_SHIPS):
             place_ships_screen()
@@ -125,6 +152,8 @@ def main():
                 run = False
 
         redraw_window()
+
+    pygame.quit()
 
 
 if __name__ == "__main__":

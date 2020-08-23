@@ -2,13 +2,12 @@ from typing import List, Tuple
 import sys
 import random
 import config
+from config import Color
 from coord import Coord
-
-Color = Tuple[int, int, int]
 
 
 def random_color() -> Color:
-    return tuple([random.randint(100, 255) for _ in range(3)])
+    return (random.randint(100, 255), random.randint(100, 255), random.randint(100, 255))
 
 
 class Ship:
@@ -31,8 +30,8 @@ class Ship:
         return False
 
     @staticmethod
-    def generate_ships(*sizes) -> list:
-        ships = []
+    def generate_ships(*sizes) -> List["Ship"]:
+        ships: List["Ship"] = []
 
         def check_overlap(to_check: Ship) -> bool:
             """Returns true if to_check is overlapping with existing ships"""
