@@ -1,5 +1,6 @@
+from coord import Coord
 from typing import Optional
-from ship import Ship
+from ship import Ship, ShipOrientation
 import pygame
 import config
 from typedefs import Pos
@@ -7,7 +8,7 @@ from typedefs import Pos
 
 class DraggableShip:
     def __init__(self, size: int, default_pos: Pos) -> None:
-        self.ship: Ship = Ship([])
+        self.ship: Ship = Ship([Coord(-1, -1) for _ in range(size)])
 
         # All ships are horizontal
         self.surface: pygame.Surface = pygame.Surface(
@@ -15,12 +16,16 @@ class DraggableShip:
 
         # This is the relative mouse pos from top right
         # This is also an indicator whether the ship is being dragged
+        # If this is not None, indicates that the ship is being dragged
         self.rel_mouse_pos: Optional[Pos] = None
 
         self.default_pos: Pos = default_pos
 
         # Position of the ship when on the grid, used when user drags ships onto the grid
+        # If this is not None, indicates that the ship is placed on the grid
         self.grid_pos: Optional[Pos] = None
+
+        self.orientation = ShipOrientation.HORIZONTAL
 
     def get_screen_pos_rect(self) -> pygame.Rect:
         r = self.surface.get_rect()
