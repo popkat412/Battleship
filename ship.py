@@ -4,16 +4,23 @@ import random
 import config
 from typedefs import Color
 from coord import Coord
-import utilities
+import utilities as utils
+from enum import Enum, auto
+
+
+class ShipOrientation(Enum):
+    VERTICAL = auto()
+    HORIZONTAL = auto()
 
 
 class Ship:
     def __init__(self, segments: List[Coord]) -> None:
         self.segments: List[Coord] = segments
-        self.color: Color = utilities.random_color()
+        self.size = len(self.segments)
+        self.color: Color = utils.random_color()
 
     def __str__(self) -> str:
-        return str(self.segments)
+        return f"<Ship>{self.segments}"
 
     def __repr__(self) -> str:
         return self.__str__()
@@ -26,49 +33,58 @@ class Ship:
 
         return False
 
-    @staticmethod
-    def generate_ships(*sizes) -> List["Ship"]:
-        ships: List["Ship"] = []
 
-        def check_overlap(to_check: Ship) -> bool:
-            """Returns true if to_check is overlapping with existing ships"""
-            for ship in ships:
-                if ship.is_overlapping(to_check):
-                    return True
+def generate_ships(*sizes) -> List[Ship]:
+    ships: List[Ship] = []
 
-            return False
+    def check_overlap(to_check: Ship) -> bool:
+        """Returns true if to_check is overlapping with existing ships"""
+        for ship in ships:
+            if ship.is_overlapping(to_check):
+                return True
 
-        for ship_size in sizes:
-            if ship_size <= 0:
-                raise Exception("Ship size must be > 0")
+        return False
 
-            # Pick a orientation
-            orientation = random.choice(("vertical", "horizontal"))
+    for ship_size in sizes:
+        if ship_size <= 0:
+            raise Exception("Ship size must be > 0")
 
-            segments: List[Coord] = []
-            generateCount = 0
-            while generateCount < 100:
-                generateCount += 1
+        # Pick a orientation
+        orientation = random.choice(list(ShipOrientation))
 
-                if orientation == "vertical":
-                    segments = []
-                    # Pick a random starting point
-                    starting = Coord(random.randint(0, config.GRID_X - 1),
-                                     random.randint(0, config.GRID_Y - 1 - (ship_size - 1)))
-                    for i in range(ship_size):
-                        segments.append(Coord(starting.x, starting.y + i))
-                else:
-                    starting = Coord(random.randint(0, config.GRID_X - 1 - (ship_size - 1)),
-                                     random.randint(0, config.GRID_Y - 1))
-                    for i in range(ship_size):
-                        segments.append(Coord(starting.x + i, starting.y))
+        segments: List[Coord] = []
+        generateCount = 0
+        while generateCount < 100:
+            generateCount += 1
 
-                s = Ship(segments)
-                if not check_overlap(s):
-                    ships.append(Ship(segments))
-                    break
+            if orientation == ShipOrientation.VERTICAL:
+                segments = generate_segments(Coord(random.randint(0, config.GRID_X - 1),
+                                                   random.randint(0, config.GRID_Y - 1 - (ship_size - 1))), ship_size, orientation)
+            elif orientation == ShipOrientation.HORIZONTAL:
+                segments = generate_segments(Coord(
+                    random.randint(0, config.GRID_X - 1 - (ship_size - 1)),
+                    random.randint(0, config.GRID_Y - 1)), ship_size, orientation)
 
-            if generateCount >= 100:
-                sys.exit("Error: Infinite loop while generating ships")
+            s = Ship(segments)
 
-        return ships
+            if not check_overlap(s):
+                ships.append(Ship(segments))
+                break
+
+        if generateCount >= 100:
+            sys.exit("Error: Infinite loop while generating ships")
+
+    return ships
+
+
+def generate_segments(starting_coord: Coord, ship_size: int, orientation: ShipOrientation) -> List[Coord]:
+
+    segments: List[Coord] = []
+    if orientation == ShipOrientation.VERTICAL:
+        # Pick a random starting point
+        for i in range(ship_size):
+            segments.append(Coord(starting_coord.x, starting_coord.y + i))
+    elif orientation == ShipOrientation.HORIZONTAL:
+        for i in range(ship_size):
+            segments.append(Coord(starting_coord.x + i, starting_coord.y))
+    return segments

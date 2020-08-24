@@ -1,4 +1,8 @@
 class Coord:
+    """ A class used to track grid coordinates
+    Positions are used to keep track of actual x y values on the screen
+    """
+
     def __init__(self, x: int, y: int) -> None:
         self.x: int = x
         self.y: int = y

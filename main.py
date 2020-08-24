@@ -1,3 +1,4 @@
+from coord import Coord
 from typing import List
 from config import Pos
 from draggable_ship import DraggableShip
@@ -6,6 +7,8 @@ import pygame
 import pygame.freetype
 from player import Player
 import config
+from ship import ShipOrientation
+from ship import generate_segments
 import utilities as utils
 
 pygame.init()
@@ -81,6 +84,7 @@ def main():
 
                 elif event.type == pygame.MOUSEBUTTONUP:
                     # Mouse button up
+
                     for s in draggable_ships:
                         # If ship is being dragged
                         if s.rel_mouse_pos is not None:
@@ -88,8 +92,56 @@ def main():
                             if grid_surface.get_rect().move(*config.GRID_DISP_LOCATION).collidepoint(pygame.mouse.get_pos()):
 
                                 print("Released on grid!")
-                                s.grid_pos = utils.sub_pos(
+
+                                # Snap to grid
+                                grid_pos = utils.sub_pos(
                                     pygame.mouse.get_pos(), s.rel_mouse_pos)
+                                trans_grid_pos = utils.sub_pos(
+                                    grid_pos, config.GRID_DISP_LOCATION)
+                                amended_for_circle_center = utils.add_pos(
+                                    trans_grid_pos,
+                                    ((config.GRID_SIZE - config.SHIP_DISP_PADDING) // 2,
+                                     (config.GRID_SIZE - config.SHIP_DISP_PADDING) // 2))
+                                grid_coord = Coord(
+                                    amended_for_circle_center[0] // config.GRID_SIZE,
+                                    amended_for_circle_center[1] // config.GRID_SIZE)
+                                snapped_pos: Pos = utils.add_pos(
+                                    (grid_coord.x * config.GRID_SIZE,
+                                     grid_coord.y * config.GRID_SIZE),
+                                    config.GRID_DISP_LOCATION)
+                                s.grid_pos = snapped_pos
+                                # Store coords in ship
+                                s.ship.segments = generate_segments(
+                                    grid_coord, s.ship.size, s.orientation)
+
+                                # EDGE CASE CHECKING
+                                def reset_ship():
+                                    s.ship.segments = [
+                                        Coord(-1, -1) for _ in range(s.ship.size)]
+                                    s.grid_pos = None
+
+                                # Is ship sticking outside grid
+                                for segment in s.ship.segments:
+                                    if segment.x not in range(0, config.GRID_X):
+                                        # Sticking out on left / right
+                                        print(
+                                            "INFO: Ship sticking out on X axis")
+                                        reset_ship()
+                                    if segment.y not in range(0, config.GRID_Y):
+                                        # Sticking out on top / bottom
+                                        print(
+                                            "INFO: Ship sticking out on Y axis")
+                                        reset_ship()
+
+                                # Check overlap
+                                for s2 in draggable_ships:
+                                    if s2 is not s and s2.grid_pos is not None and s2.ship.is_overlapping(s.ship):
+                                        # Oops: overlapping, not allowed
+                                        print("INFO: Overlapping ship")
+                                        reset_ship()
+
+                            else:
+                                s.grid_pos = None
 
                         s.rel_mouse_pos = None
 
@@ -115,7 +167,8 @@ def main():
 
             WIN.blit(grid_surface, config.GRID_DISP_LOCATION)
 
-            # Draggable ships at the bottom
+            # Draggable ships
+            # TODO: Draw ships that are being dragged on top of other ships
             for s in draggable_ships:
                 if s.rel_mouse_pos is not None:
                     mousePos = pygame.mouse.get_pos()

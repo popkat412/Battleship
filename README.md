@@ -8,8 +8,8 @@ Note: This is just an experiment with Pygame and the code is probably horrible
 - [ ] Base playable game
     - [ ] Allow human to drag ships onto the board
         - [ ] Press space to rotate ships (swap x and y of rel_mouse_pos)
-        - [ ] Snap to grid
-        - [ ] Check overlap
+        - [x] Snap to grid
+        - [x] Check overlap
     - [ ] Computer AI
     - [ ] Actual gameplay (take turns and stuff)
 - [ ] Title Screen

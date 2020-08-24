@@ -1,5 +1,6 @@
 from typing import List
 from ship import Ship
+import ship
 import config
 
 
@@ -8,6 +9,6 @@ class Player:
         if ships is not None:
             self.ships: List[Ship] = ships
         else:
-            self.ships = Ship.generate_ships(*config.SHIP_SIZES)
+            self.ships = ship.generate_ships(*config.SHIP_SIZES)
 
         self.name: str = name
