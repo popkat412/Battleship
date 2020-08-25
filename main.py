@@ -59,10 +59,6 @@ def main():
                                                    dist_board_window("Y")) + (i - 2) * config.GRID_SIZE + config.SHIP_DISP_PADDING))
             draggable_ships.append(DraggableShip(size, pos))
 
-            for i in range(size):
-                pygame.draw.circle(
-                    draggable_ships[-1].surface, draggable_ships[-1].ship.color, (int(config.GRID_SIZE / 2 + i * config.GRID_SIZE), int(config.GRID_SIZE / 2)), int((config.GRID_SIZE - config.SHIP_DISP_PADDING) / 2))
-
         while run:
             clock.tick(FPS)
 
@@ -72,6 +68,16 @@ def main():
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     run = False
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_SPACE:
+                        # Pressed space
+                        # TODO: rotate ship orientation
+                        for s in draggable_ships:
+                            if s.rel_mouse_pos is not None:
+                                # This ship is being dragged
+                                print("Toggling orientation...")
+                                s.toggle_orientation()
+
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     # Mouse button down
                     print(f"Mouse down: {pygame.mouse.get_pos()}")
@@ -115,10 +121,6 @@ def main():
                                     grid_coord, s.ship.size, s.orientation)
 
                                 # EDGE CASE CHECKING
-                                def reset_ship():
-                                    s.ship.segments = [
-                                        Coord(-1, -1) for _ in range(s.ship.size)]
-                                    s.grid_pos = None
 
                                 # Is ship sticking outside grid
                                 for segment in s.ship.segments:
@@ -126,19 +128,19 @@ def main():
                                         # Sticking out on left / right
                                         print(
                                             "INFO: Ship sticking out on X axis")
-                                        reset_ship()
+                                        s.reset()
                                     if segment.y not in range(0, config.GRID_Y):
                                         # Sticking out on top / bottom
                                         print(
                                             "INFO: Ship sticking out on Y axis")
-                                        reset_ship()
+                                        s.reset()
 
                                 # Check overlap
                                 for s2 in draggable_ships:
                                     if s2 is not s and s2.grid_pos is not None and s2.ship.is_overlapping(s.ship):
                                         # Oops: overlapping, not allowed
                                         print("INFO: Overlapping ship")
-                                        reset_ship()
+                                        s.reset()
 
                             else:
                                 s.grid_pos = None
@@ -158,12 +160,12 @@ def main():
                                      pygame.Rect(i * config.GRID_SIZE, j * config.GRID_SIZE, config.GRID_SIZE, config.GRID_SIZE), 3)
 
             # Ships (may not be necessary)
-            for ship in players[0].ships:
-                for segment in ship.segments:
-                    pygame.draw.circle(grid_surface, ship.color,
-                                       (segment.x * config.GRID_SIZE + config.GRID_SIZE / 2,
-                                        segment.y * config.GRID_SIZE + config.GRID_SIZE / 2),
-                                       config.GRID_SIZE / 2 - config.SHIP_DISP_PADDING)
+            # for ship in players[0].ships:
+            #     for segment in ship.segments:
+            #         pygame.draw.circle(grid_surface, ship.color,
+            #                            (segment.x * config.GRID_SIZE + config.GRID_SIZE / 2,
+            #                             segment.y * config.GRID_SIZE + config.GRID_SIZE / 2),
+            #                            config.GRID_SIZE / 2 - config.SHIP_DISP_PADDING)
 
             WIN.blit(grid_surface, config.GRID_DISP_LOCATION)
 
