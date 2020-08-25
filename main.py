@@ -159,19 +159,10 @@ def main():
                     pygame.draw.rect(grid_surface, config.FOREGROUND_COLOR,
                                      pygame.Rect(i * config.GRID_SIZE, j * config.GRID_SIZE, config.GRID_SIZE, config.GRID_SIZE), 3)
 
-            # Ships (may not be necessary)
-            # for ship in players[0].ships:
-            #     for segment in ship.segments:
-            #         pygame.draw.circle(grid_surface, ship.color,
-            #                            (segment.x * config.GRID_SIZE + config.GRID_SIZE / 2,
-            #                             segment.y * config.GRID_SIZE + config.GRID_SIZE / 2),
-            #                            config.GRID_SIZE / 2 - config.SHIP_DISP_PADDING)
-
             WIN.blit(grid_surface, config.GRID_DISP_LOCATION)
 
             # Draggable ships
-            # TODO: Draw ships that are being dragged on top of other ships
-            for s in draggable_ships:
+            for s in sorted(draggable_ships, key=lambda s: 0 if s.grid_pos is not None else 1):
                 if s.rel_mouse_pos is not None:
                     mousePos = pygame.mouse.get_pos()
                     WIN.blit(
