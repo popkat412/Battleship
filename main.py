@@ -1,5 +1,6 @@
+import sys
 from coord import Coord
-from typing import List
+from typing import List, Optional
 from config import Pos
 from draggable_ship import DraggableShip
 from game_state import GameState
@@ -26,8 +27,8 @@ def main():
 
     # Game data
     players = (Player("Human", []), Player("Computer"))
-    currentPlayer = players[0]
-    currentState = GameState.PLACE_SHIPS
+    current_player = players[0]
+    current_state = GameState.PLACE_SHIPS
 
     def dist_board_window(axis: str) -> float:
         if axis == "X":
@@ -43,14 +44,13 @@ def main():
                               int(dist_board_window("X") / 2)))
 
     def place_ships_screen() -> None:
-        nonlocal run
+        nonlocal current_state
 
-        # TODO: 2 rows of ships at the bottom for player to drag
         draggable_ships: List[DraggableShip] = []
 
         for i, size in enumerate(config.SHIP_SIZES):
             # NOTE: Maybe find some better way to automatically arrange the ships...
-            # ! This only works if there are 4 ships
+            # * This only works if there are 4 ships
             pos = (int(config.WIDTH / 4),
                    int((config.HEIGHT - dist_board_window("Y")) + i * config.GRID_SIZE +
                        config.SHIP_DISP_PADDING))  # Put first 2 in first column
@@ -59,15 +59,35 @@ def main():
                                                    dist_board_window("Y")) + (i - 2) * config.GRID_SIZE + config.SHIP_DISP_PADDING))
             draggable_ships.append(DraggableShip(size, pos))
 
-        while run:
+        run_place_ships_screen = True
+
+        while run_place_ships_screen:
             clock.tick(FPS)
 
-            grid_surface = pygame.Surface(
+            grid_surface: pygame.Surface = pygame.Surface(
                 (config.GRID_X * config.GRID_SIZE, config.GRID_Y * config.GRID_SIZE))
+
+            start_button = pygame.Surface(
+                (config.GRID_SIZE * 3, config.GRID_SIZE))
+            start_button.fill(config.BUTTON_COLOR)
+            text_surface, text_rect = INFO_FONT.render(
+                "Start", config.FOREGROUND_COLOR)
+            start_button.blit(text_surface, (
+                int(start_button.get_rect().width / 2 - text_rect.width / 2),
+                int(start_button.get_rect().height / 2 - text_rect.height / 2)
+            ))
+
+            all_ships_placed = True
+            for s in draggable_ships:
+                if s.grid_pos is None:
+                    all_ships_placed = False
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    run = False
+                    run_place_ships_screen = False
+                    pygame.quit()
+                    sys.exit()
+
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_SPACE:
                         # Pressed space
@@ -80,17 +100,30 @@ def main():
 
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     # Mouse button down
-                    print(f"Mouse down: {pygame.mouse.get_pos()}")
+                    print(f"INFO: Mouse down: {pygame.mouse.get_pos()}")
+
+                    # Check ships
                     for s in draggable_ships:
                         if s.get_screen_pos_rect().collidepoint(pygame.mouse.get_pos()):
-                            print("Clicked on ship")
+                            print("INFO: Clicked on ship")
                             mousePos: Pos = pygame.mouse.get_pos()
                             s.rel_mouse_pos = utils.sub_pos(
                                 mousePos, utils.rect_to_pos(s.get_screen_pos_rect()))
 
                 elif event.type == pygame.MOUSEBUTTONUP:
-                    # Mouse button up
+                    # MOUSE BUTTON UP
 
+                    # Check button
+                    if all_ships_placed:
+                        if start_button.get_rect().move(
+                            config.WIDTH - start_button.get_rect().width,
+                            config.HEIGHT - start_button.get_rect().height
+                        ).collidepoint(pygame.mouse.get_pos()):
+                            print("INFO: Clicked on start button")
+                            current_state = GameState.GAME_SCREEN
+                            run_place_ships_screen = False
+
+                    # Ship placement
                     for s in draggable_ships:
                         # If ship is being dragged
                         if s.rel_mouse_pos is not None:
@@ -143,7 +176,7 @@ def main():
                                         s.reset()
 
                             else:
-                                s.grid_pos = None
+                                s.reset()
 
                         s.rel_mouse_pos = None
 
@@ -172,29 +205,40 @@ def main():
                 else:
                     WIN.blit(s.surface, s.default_pos)
 
+            # Start game button
+            if all_ships_placed:
+                WIN.blit(start_button, (
+                    config.WIDTH - start_button.get_rect().width,
+                    config.HEIGHT - start_button.get_rect().height
+                ))
+
             pygame.display.update()
 
-    def game_screen():
-        nonlocal run
+        print("Finished place_ships_screen()")
 
-        while run:
+    def game_screen():
+        run_game_screen = True
+        while run_game_screen:
+            clock.tick(FPS)
+            print("running game screen...")
+
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    run = False
+                    pygame.quit()
+                    sys.exit()
 
-            # Player text
-            # text_surface, text_rect = TITLE_FONT.render(
-            #     "BATTLESHIP", config.FOREGROUND_COLOR)
-            # WIN.blit(text_surface, (config.WIDTH / 2 -
-            #                         text_rect.width / 2, (config.HEIGHT - config.GRID_Y * config.GRID_SIZE) / 4))
+            # Background
+            WIN.fill(config.BACKGROUND_COLOR)
+
+            draw_title_text(WIN, "Game Screen")
 
     def redraw_window():
         # Background
         WIN.fill(config.BACKGROUND_COLOR)
 
-        if (currentState == GameState.PLACE_SHIPS):
+        if current_state == GameState.PLACE_SHIPS:
             place_ships_screen()
-        elif (currentState == GameState.GAME_SCREEN):
+        elif current_state == GameState.GAME_SCREEN:
             game_screen()
 
     while run:

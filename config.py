@@ -1,4 +1,3 @@
-from typing import Tuple
 from typedefs import Pos, Color
 
 
@@ -16,6 +15,7 @@ GRID_DISP_LOCATION: Pos = (int((HEIGHT - GRID_SIZE * GRID_X) / 2),
 # Colors
 BACKGROUND_COLOR: Color = (0, 0, 0)
 FOREGROUND_COLOR: Color = (255, 255, 255)
+BUTTON_COLOR: Color = (30, 30, 30)
 
 # Text
 FONT_NAME = "assets/Verdana.ttf"
