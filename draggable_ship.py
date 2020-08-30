@@ -7,6 +7,8 @@ from typedefs import Pos
 
 
 class DraggableShip:
+    """ Ship with a surface and helper methods for ships that can be dragged by the user"""
+
     def __init__(self, size: int, default_pos: Pos) -> None:
         self.ship: Ship = Ship([Coord(-1, -1) for _ in range(size)])
 

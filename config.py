@@ -1,5 +1,7 @@
+import pygame.freetype
 from typedefs import Pos, Color
 
+pygame.init()
 
 # Sizes
 WIDTH, HEIGHT = 750, 750
@@ -21,6 +23,8 @@ BUTTON_COLOR: Color = (30, 30, 30)
 FONT_NAME = "assets/Verdana.ttf"
 FONT_SIZE = 20
 TITLE_FONT_SIZE = 28
+INFO_FONT = pygame.freetype.Font(FONT_NAME, FONT_SIZE)
+TITLE_FONT = pygame.freetype.Font(FONT_NAME, TITLE_FONT_SIZE)
 
 # Gameplay
 SHIP_SIZES = (2, 3, 3, 5)
