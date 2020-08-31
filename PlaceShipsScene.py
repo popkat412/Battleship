@@ -23,14 +23,8 @@ class PlaceShipsScene(Scene):
         self.draggable_ships: List[DraggableShip] = []
 
         for i, size in enumerate(config.SHIP_SIZES):
-            # NOTE: Maybe find some better way to automatically arrange the ships...
-            # * This only works if there are 4 ships
-            pos = (int(config.WIDTH / 4),
-                   int((config.HEIGHT - utils.dist_board_window("Y")) + i * config.GRID_SIZE +
-                       config.SHIP_DISP_PADDING))  # Put first 2 in first column
-            if i >= 2:  # Put next 2 in 2nd column
-                pos = (int(config.WIDTH / 2), int((config.HEIGHT -
-                                                   utils.dist_board_window("Y")) + (i - 2) * config.GRID_SIZE + config.SHIP_DISP_PADDING))
+            pos = (int(config.WIDTH / 8),
+                   int((config.HEIGHT - utils.dist_board_window("Y")) + i * config.GRID_SIZE))
             self.draggable_ships.append(DraggableShip(size, pos))
 
         # All ships placed
@@ -89,9 +83,9 @@ class PlaceShipsScene(Scene):
                     config.WIDTH - self.start_button.get_rect().width,
                     config.HEIGHT - self.start_button.get_rect().height
                 ).collidepoint(pygame.mouse.get_pos()):
-                    # TODO: Implement this
                     print("INFO: Clicked on start button")
-                    self.director.change_scene(GameScene(self.director))
+                    self.director.change_scene(
+                        GameScene(self.director, [s.ship for s in self.draggable_ships]))
 
             # Ship placement
             for s in self.draggable_ships:

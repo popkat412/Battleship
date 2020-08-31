@@ -4,15 +4,20 @@ from typedefs import Pos, Color
 pygame.init()
 
 # Sizes
-WIDTH, HEIGHT = 750, 750
+WIDTH, HEIGHT = 1500, 750
 GRID_X = 10
 GRID_Y = 10
 GRID_SIZE = 50
 
 # Display
 SHIP_DISP_PADDING = 5
-GRID_DISP_LOCATION: Pos = (int((HEIGHT - GRID_SIZE * GRID_X) / 2),
-                           int((WIDTH - GRID_SIZE * GRID_Y) / 2))  # This is the location of the board's top-left corner
+# This is the location of the board's top-left corner
+GRID_DISP_LOCATION: Pos = (int((WIDTH - GRID_SIZE * GRID_X) / 2),
+                           int((HEIGHT - GRID_SIZE * GRID_Y) / 2))
+PLAYER_GRID_LOCATION: Pos = (int((WIDTH - 2 * GRID_SIZE * GRID_X) / 3),
+                             int((HEIGHT - GRID_SIZE * GRID_Y) / 2))
+OPPONENT_GRID_LOCATION: Pos = (int((WIDTH - 2 * GRID_SIZE * GRID_X) / 3*2 + GRID_SIZE * GRID_X),
+                               int((HEIGHT - GRID_SIZE * GRID_Y) / 2))
 
 # Colors
 BACKGROUND_COLOR: Color = (0, 0, 0)
