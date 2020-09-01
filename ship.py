@@ -14,8 +14,19 @@ class ShipOrientation(Enum):
 
 
 class Ship:
+    """Ship class for storing information about a particular ship"""
+
+    # TODO: Refactor so each ship has its surface that drawing code can just blit
+
     def __init__(self, segments: List[Coord]) -> None:
         self.segments: List[Coord] = segments
+
+        if len(segments) > 1 and segments[0].x == segments[1].x:
+            self.orientation: ShipOrientation = ShipOrientation.VERTICAL
+        else:
+            # Will default to horizontal if only 1 segment
+            self.orientation = ShipOrientation.HORIZONTAL
+
         self.size = len(self.segments)
         self.color: Color = utils.random_color()
 

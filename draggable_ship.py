@@ -25,6 +25,7 @@ class DraggableShip:
         # If this is not None, indicates that the ship is placed on the grid
         self.grid_pos: Optional[Pos] = None
 
+        # TODO: Use orientation on ship class instead of defining own
         self.orientation = ShipOrientation.HORIZONTAL
 
     def initWithOrientation(self, orientation: ShipOrientation):

@@ -1,4 +1,4 @@
-from PlaceShipsScene import PlaceShipsScene
+from place_ships_screen import PlaceShipsScene
 from director import Director
 import pygame
 import pygame.freetype

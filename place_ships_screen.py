@@ -1,5 +1,6 @@
+from grid import Grid
 from director import Director
-from GameScene import GameScene
+from game_scene import GameScene
 from ship import generate_segments
 from typedefs import Pos
 from coord import Coord
@@ -41,9 +42,7 @@ class PlaceShipsScene(Scene):
             int(self.start_button.get_rect().height / 2 - text_rect.height / 2)
         ))
 
-        # Grid surface
-        self.grid_surface: pygame.Surface = pygame.Surface(
-            (config.GRID_X * config.GRID_SIZE, config.GRID_Y * config.GRID_SIZE))
+        self.grid = Grid(config.GRID_DISP_LOCATION)
 
     def on_update(self):
         pass
@@ -92,8 +91,7 @@ class PlaceShipsScene(Scene):
                 # If ship is being dragged
                 if s.rel_mouse_pos is not None:
                     # If released inside board
-                    if self.grid_surface.get_rect().move(*config.GRID_DISP_LOCATION).collidepoint(pygame.mouse.get_pos()):
-
+                    if self.grid.compensated_grid_loc().collidepoint(pygame.mouse.get_pos()):
                         print("Released on grid!")
 
                         # Snap to grid
@@ -154,12 +152,7 @@ class PlaceShipsScene(Scene):
         utils.draw_title_text(window, "Place your Ships")
 
         # Grid
-        for i in range(config.GRID_X):
-            for j in range(config.GRID_Y):
-                pygame.draw.rect(self.grid_surface, config.FOREGROUND_COLOR,
-                                 pygame.Rect(i * config.GRID_SIZE, j * config.GRID_SIZE, config.GRID_SIZE, config.GRID_SIZE), 3)
-
-        window.blit(self.grid_surface, config.GRID_DISP_LOCATION)
+        self.grid.draw(window)
 
         # Draggable ships
         for s in sorted(self.draggable_ships, key=lambda s: 0 if s.grid_pos is not None else 1):
